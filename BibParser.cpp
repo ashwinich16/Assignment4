@@ -4,7 +4,7 @@
 #include <regex>
 #include <vector>
 #include <set>
-#include <cassert>  // For assert()
+#include <cassert>
 #include "publication.h"
 #include "BibParser.h"
 
@@ -111,15 +111,36 @@ void processEntry(const string& currentEntry, vector<Publication>& publications,
     bool hasAffiliatedAuthor = false;
 
     while (getline(authorStream, authorName, ',')) {
-        authorName = regex_replace(authorName, regex("^\\s+|\\s+$"), ""); // Trim spaces
-        if (!uniqueAuthors.insert(authorName).second) {
-            cerr << "Error: Duplicate author found in the entry:\n" << currentEntry << endl;
-            assert(false && "Duplicate author found in the entry!");  // Assert failure on duplicate author
-        };
-        if (faculty.count(authorName)) {
-            hasAffiliatedAuthor = true;
+        // Split further by 'and' using substring logic
+        size_t pos = 0;
+        while ((pos = authorName.find("and")) != string::npos) {
+            string subAuthor = authorName.substr(0, pos);
+            subAuthor = regex_replace(subAuthor, regex("^\\s+|\\s+$"), ""); // Trim spaces
+
+            if (!uniqueAuthors.insert(subAuthor).second) {
+                cerr << "Error: Duplicate author found in the entry:\n" << currentEntry << endl;
+                assert(false && "Duplicate author found in the entry!");
+            }
+            if (faculty.count(subAuthor)) {
+                hasAffiliatedAuthor = true;
+            }
+            authors.emplace_back(subAuthor, faculty.count(subAuthor) ? "IIIT-Delhi" : "Unknown Affiliation");
+
+            authorName = authorName.substr(pos + 3); // Move past "and"
         }
-        authors.emplace_back(authorName, faculty.count(authorName) ? "IIIT-Delhi" : "Unknown Affiliation");
+
+        // Handle the last part of the authorName
+        authorName = regex_replace(authorName, regex("^\\s+|\\s+$"), "");
+        if (!authorName.empty()) {
+            if (!uniqueAuthors.insert(authorName).second) {
+                cerr << "Error: Duplicate author found in the entry:\n" << currentEntry << endl;
+                assert(false && "Duplicate author found in the entry!");
+            }
+            if (faculty.count(authorName)) {
+                hasAffiliatedAuthor = true;
+            }
+            authors.emplace_back(authorName, faculty.count(authorName) ? "IIIT-Delhi" : "Unknown Affiliation");
+        }
     }
 
     // If no affiliated author found, trigger an error
