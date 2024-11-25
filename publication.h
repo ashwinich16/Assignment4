@@ -1,33 +1,24 @@
 #ifndef PUBLICATION_H
 #define PUBLICATION_H
 
-#include <iostream>
 #include <string>
 #include <vector>
 
 class Person {
-protected:
     std::string name;
-
 public:
-    Person(const std::string& name);
-    virtual ~Person() = default;
-
+    explicit Person(const std::string& name);
     std::string getName() const;
 };
 
 class Author : public Person {
-private:
     std::string affiliation;
-
 public:
     Author(const std::string& name, const std::string& affiliation);
-
     std::string getAffiliation() const;
 };
 
 class Publication {
-private:
     std::string title;
     std::string venue;
     int year;
@@ -47,4 +38,4 @@ public:
     int getCoAuthorCount() const;
 };
 
-#endif
+#endif // PUBLICATION_H

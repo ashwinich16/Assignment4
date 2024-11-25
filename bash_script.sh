@@ -1,10 +1,20 @@
 #!/bin/bash
 
-# Create necessary directories
-mkdir -p build
+# List of files to create
+files=(
+    "main.cpp"
+    "BibParser.cpp"
+    "BibParser.h"
+    "publication.cpp"
+    "publication.h"
+)
 
-# Compile the program in debug and optimized modes
-g++ -g -o build/debug Publication.cpp BibParser.cpp main.cpp
-g++ -O2 -o build/optimized Publication.cpp BibParser.cpp main.cpp
-
-echo "Build complete. Executables are located in the build/ directory."
+# Create each file if it does not already exist
+for file in "${files[@]}"; do
+    if [[ -f "$file" ]]; then
+        echo "$file already exists. Skipping..."
+    else
+        touch "$file"
+        echo "Created $file"
+    fi
+done

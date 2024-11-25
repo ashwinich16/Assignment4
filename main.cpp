@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "BibParser.h"
-#include "Publication.h"
+#include "publication.h"
 using namespace std;
 
 void printAuthorPublications(const vector<Publication>& publications, const string& authorName) {
@@ -10,7 +10,6 @@ void printAuthorPublications(const vector<Publication>& publications, const stri
     cout << "\nPublications by " << authorName << ":\n";
     for (const auto& publication : publications) {
         for (const auto& author : publication.getAuthors()) {
-            // Perform a case-insensitive partial match
             if (author.getName().find(authorName) != string::npos) {
                 publication.printPublication();
                 totalCoAuthors += publication.getCoAuthorCount();
@@ -22,31 +21,35 @@ void printAuthorPublications(const vector<Publication>& publications, const stri
     }
 
     if (paperCount > 0) {
-        double avgCoAuthors = double(totalCoAuthors) / paperCount;
-        cout << "Average co-authors per paper: " << avgCoAuthors << "\n";
+        cout << "Average co-authors per paper: " 
+             << (int)(totalCoAuthors / paperCount) << "\n";
     } else {
         cout << "No publications found for " << authorName << ".\n";
     }
 }
 
-
 int main(int argc, char* argv[]) {
     string bibFilePath = "publist.bib";
     string facultyFilePath = "IIITDelhi.csv";
 
-    try {
-        // Load faculty names
-        set<string> faculty = loadFaculty(facultyFilePath);
+    // Ensure that at least one author name is provided as a command-line argument
+    if (argc < 2) {
+        cerr << "Error: Please provide at least one author name as a command-line argument." << endl;
+        return 1;
+    }
 
-        // Parse and validate the BibTeX file
+    try {
+        // Load faculty list
+        set<string> faculty = loadFaculty(facultyFilePath);
+        
+        // Parse the BibTeX file
         auto publications = parseBibFile(bibFilePath, faculty);
 
-        // Query for an author's publications
-        string authorName;
-        cout << "Enter author name to search publications: ";
-        getline(cin, authorName);
-
-        printAuthorPublications(publications, authorName);
+        // Loop through all the author names passed as command-line arguments
+        for (int i = 1; i < argc; ++i) {
+            string authorName = argv[i]; // Get author name from command-line arguments
+            printAuthorPublications(publications, authorName); // Print publications for each author
+        }
 
     } catch (const exception& e) {
         cerr << "Error: " << e.what() << "\n";

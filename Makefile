@@ -5,7 +5,9 @@ all: my_program
 
 # Linking all object files into the final executable
 my_program: main.o BibParser.o publication.o 
-	g++ main.o BibParser.o publication.o -o my_program
+	g++ -g -o output main.o BibParser.o publication.o 
+	g++ -O3 -o optimize main.o BibParser.o publication.o
+
 
 # Object file targets
 main.o: main.cpp
